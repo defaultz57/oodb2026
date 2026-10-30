@@ -1,0 +1,118 @@
+-- Create object type for address
+CREATE TYPE addressTy AS OBJECT(
+building_no INTEGER,
+building_name VARCHAR(20),
+area_name VARCHAR(20),
+city_name VARCHAR(20),
+pincode NUMBER(6));
+/
+
+-- Create object type for employee name
+CREATE TYPE ename AS OBJECT(
+surname VARCHAR(20),
+first_name VARCHAR(20),
+middle_name VARCHAR(20));
+/
+
+-- Create object type for skill
+CREATE TYPE skillty AS OBJECT(
+skill_name VARCHAR(30),
+prof_level VARCHAR(20),
+exp_year NUMBER(3,1));
+/
+
+-- Create employee table using object types
+CREATE TABLE emp(
+emp_id INTEGER PRIMARY KEY,
+emp_name ename,
+dob DATE,
+address addressTy,
+skill skillty,
+salary NUMBER(5),
+dept_id NUMBER(5));
+
+-- Insert employee records
+INSERT INTO emp VALUES (1, ename('Doe','John','Martin'), '12-Jan-2001', addressTy(12,'Celestial Tower','Amrut Nagar','Thane',400612), skillty('Python','Intermediate',2.0), 25000, 20);
+INSERT INTO emp VALUES (2, ename('Smith','Alice','Marie'), '15-Mar-1994', addressTy(45,'Sun Valley','Bandra West','Mumbai',400050), skillty('Oracle SQL','Expert',4.5), 65000, 10);
+INSERT INTO emp VALUES (3, ename('Patel','Rahul','Kumar'), '22-Aug-2003', addressTy(102,'Green Park','Vashi','Navi Mumbai',400703), skillty('Java','Intermediate',1.5), 40000, 10);
+INSERT INTO emp VALUES (4, ename('Sharma','Priya','Rajesh'), '05-Nov-2001', addressTy(8,'Royal Heights','Khadakpada','Kalyan',421301), skillty('Web Development','Beginner',1.0), 30000, 30);
+INSERT INTO emp VALUES (5, ename('Khan','Tariq','Anwar'), '30-May-1998', addressTy(304,'Orchid Residency','Andheri East','Mumbai',400069), skillty('Data Analysis','Expert',5.0), 75000, 20);
+INSERT INTO emp VALUES (6, ename('Gupta','Sneha','Vikram'), '18-Sep-2003', addressTy(17,'Silver Oaks','Belapur','Navi Mumbai',400614), skillty('Docker','Intermediate',2.5), 50000, 30);
+
+-- Create object type for department location
+CREATE TYPE locty AS OBJECT(
+building_no INTEGER,
+city_name VARCHAR(20),
+pincode NUMBER(6));
+/
+
+-- Create object type for department manager
+CREATE TYPE dept_mgty AS OBJECT(
+mgr_name VARCHAR(30),
+mgr_phone NUMBER(10));
+/
+
+-- Create department table with foreign key to emp
+CREATE TABLE dept(
+dept_id NUMBER(5) PRIMARY KEY,
+dept_code VARCHAR(10),
+dept_name VARCHAR(20),
+manager dept_mgty,
+total_emp INTEGER,
+location locty,
+emp_id INTEGER,
+FOREIGN KEY (emp_id) REFERENCES emp(emp_id));
+
+-- Insert department records
+INSERT INTO dept VALUES (10,'DEV','Engineering', dept_mgty('Rajesh Sharma',9820112233), 25, locty(101,'Thane',400601), 2);
+INSERT INTO dept VALUES (20,'HR','Human Resource', dept_mgty('Pooja Mehta',9819223344), 10, locty(202,'Mumbai',400050), 1);
+INSERT INTO dept VALUES (30,'FIN','Finance', dept_mgty('Sanjay Verma',9833445566), 15, locty(305,'Navi Mumbai',400703), 3);
+INSERT INTO dept VALUES (40,'MKT','Marketing', dept_mgty('Neha Kapoor',9870556677), 12, locty(410,'Mumbai',400069), 4);
+INSERT INTO dept VALUES (50,'OPS','Operation', dept_mgty('Amit Nair',9892667788), 30, locty(108,'Kalyan',421301), 5);
+INSERT INTO dept VALUES (60,'QA','Quality Assurance', dept_mgty('Anjali Joshi',9821778899), 8, locty(502,'Thane',400614), 6);
+
+-- Display all employees
+SELECT * FROM emp;
+
+-- Display all departments
+SELECT * FROM dept;
+
+-- Employee name and city from address object
+SELECT e.emp_name, e.address.city_name
+FROM emp e;
+
+-- Employee name and skill name
+SELECT e.emp_name, e.skill.skill_name
+FROM emp e;
+
+-- Employee name with department name (join)
+SELECT e.emp_name, d.dept_name FROM emp e JOIN dept d ON e.emp_id = d.emp_id;
+
+-- Employee name with department manager name
+SELECT e.emp_name, d.manager.mgr_name FROM emp e
+JOIN dept d ON e.emp_id = d.emp_id;
+
+-- Employee name, skill and department location city
+SELECT e.emp_name, e.skill.skill_name, d.location.city_name FROM emp e JOIN dept d ON e.emp_id = d.emp_id;
+
+-- Employee name, city and department code
+SELECT e.emp_name, e.address.city_name, d.dept_code FROM emp e
+JOIN dept d ON e.emp_id = d.emp_id;
+
+-- First name, skill and department of employee John
+SELECT e.emp_name.first_name, e.skill.skill_name, d.dept_name
+FROM emp e JOIN dept d ON e.emp_id = d.emp_id WHERE
+e.emp_name.first_name = 'John';
+
+-- Employees with experience above 2.0 years and salary above 30000
+SELECT e.emp_name, e.salary, e.skill.skill_name FROM emp e
+WHERE e.skill.exp_year > 2.0 AND e.salary > 30000;
+
+-- Update salary and experience of employee 2
+Update emp e SET e.salary = 70000, e.skill.exp_year = 5.0 WHERE e.emp_id = 2;
+
+-- Delete department 60
+DELETE FROM dept WHERE dept_id = 60;
+
+-- Remove the total_emp column from dept
+ALTER TABLE dept DROP COLUMN total_emp;
