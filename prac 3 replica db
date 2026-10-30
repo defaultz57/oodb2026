@@ -1,0 +1,90 @@
+-- Create the main table
+CREATE TABLE Student(
+id INT PRIMARY KEY,
+name VARCHAR2(30),
+city VARCHAR2(15));
+
+-- Create the replica table from the main table
+CREATE TABLE Student_Replica AS SELECT * FROM Student;
+
+-- Create a package with a flag to prevent infinite trigger loops
+CREATE PACKAGE Replication_control IS is_replicating boolean := FALSE;
+END Replication_control;
+/
+
+-- Trigger: copy every change in Student to Student_Replica
+CREATE TRIGGER Std_to_Stdrep
+AFTER INSERT OR UPDATE OR DELETE ON Student
+FOR EACH ROW
+BEGIN
+IF NOT Replication_control.is_replicating THEN Replication_control.is_replicating := TRUE;
+IF INSERTING THEN
+INSERT INTO Student_Replica(id, name, city)
+VALUES (:NEW.id, :NEW.name, :NEW.city);
+ELSIF UPDATING THEN
+UPDATE Student_Replica
+SET name = :NEW.name, city = :NEW.city
+WHERE id = :OLD.id;
+ELSIF DELETING THEN
+DELETE FROM Student_Replica
+WHERE id = :OLD.id;
+END IF;
+Replication_control.is_replicating := FALSE;
+END IF;
+END;
+/
+
+-- Trigger: copy every change in Student_Replica back to Student
+CREATE TRIGGER StdRep_to_Std
+AFTER INSERT OR UPDATE OR DELETE ON Student_Replica
+FOR EACH ROW
+BEGIN
+IF NOT Replication_control.is_replicating THEN
+Replication_control.is_replicating := TRUE;
+IF INSERTING THEN
+INSERT INTO Student(id, name, city)
+VALUES (:NEW.id, :NEW.name, :NEW.city);
+ELSIF UPDATING THEN
+UPDATE Student
+SET name = :NEW.name, city = :NEW.city
+WHERE id = :OLD.id;
+ELSIF DELETING THEN
+DELETE FROM Student
+WHERE id = :OLD.id;
+END IF;
+Replication_control.is_replicating := FALSE;
+END IF;
+END;
+/
+
+-- Insert into main table (auto-copied to replica)
+INSERT INTO Student VALUES (1,'John','Mumbai');
+
+-- Check main table
+SELECT * FROM Student;
+
+-- Insert into replica (auto-copied to main table)
+INSERT INTO Student_Replica VALUES (2,'Alex','Thane');
+
+-- Check replica table
+SELECT * FROM Student_Replica;
+
+-- Update in main table (reflects in replica)
+UPDATE Student
+SET name = 'Johny'
+WHERE id = 1;
+
+-- Check replica after update
+SELECT * FROM Student_Replica;
+
+-- Insert directly into replica
+INSERT INTO Student_Replica VALUES (3,'Maria','Pune');
+
+-- Check main table reflects the insert
+SELECT * FROM Student;
+
+-- Delete from main table (reflects in replica)
+DELETE FROM Student WHERE id = 2;
+
+-- Check replica after delete
+SELECT * FROM Student_Replica;
