@@ -1,0 +1,74 @@
+-- Create a table range-partitioned on SAL (horizontal fragmentation)
+CREATE TABLE EMP_JULY_23
+(EMPNO INTEGER,
+ENAME VARCHAR(20),
+SAL NUMBER(5))
+PARTITION BY RANGE(SAL)
+(PARTITION SAL1 VALUES LESS THAN(2000),
+PARTITION SAL2 VALUES LESS THAN(4000),
+PARTITION SAL3 VALUES LESS THAN(10000));
+
+-- Insert employee records
+INSERT INTO EMP_JULY_23 VALUES (100,'ABC',1000);
+INSERT INTO EMP_JULY_23 VALUES (101,'DEF',2000);
+INSERT INTO EMP_JULY_23 VALUES (102,'GHI',6000);
+INSERT INTO EMP_JULY_23 VALUES (103,'JKL',7000);
+INSERT INTO EMP_JULY_23 VALUES (104,'MNO',9000);
+
+-- Display all rows of the table
+select * from EMP_JULY_23;
+
+-- Display rows stored in each partition
+select * from EMP_JULY_23 PARTITION (SAL1);
+select * from EMP_JULY_23 PARTITION (SAL2);
+select * from EMP_JULY_23 PARTITION (SAL3);
+
+-- Change name of employee 100 to TAN
+Update EMP_JULY_23
+Set ENAME = 'TAN'
+Where EMPNO = 100;
+
+-- Rename the table
+Rename EMP_JULY_23 to EMPLOYEE_26;
+
+-- Display all rows after renaming
+SELECT * from EMPLOYEE_26;
+
+-- Add a new column CITY
+ALTER TABLE EMPLOYEE_26
+ADD CITY VARCHAR(10);
+
+-- Display table with new column
+Select * from EMPLOYEE_26;
+
+-- Drop the column CITY
+ALTER TABLE EMPLOYEE_26
+drop column CITY;
+
+-- Delete employees with salary less than 2000
+Delete from EMPLOYEE_26
+where SAL<2000;
+
+-- Display remaining rows
+Select * from EMPLOYEE_26;
+
+-- Minimum salary
+Select MIN(SAL) as Min_Salary from EMPLOYEE_26;
+
+-- Maximum salary
+Select MAX(SAL) as Max_Salary from EMPLOYEE_26;
+
+-- Total of all salaries
+Select SUM(SAL) as Total_Sal from EMPLOYEE_26;
+
+-- Average salary
+Select AVG(SAL) as Avg_Sal from EMPLOYEE_26;
+
+-- Count of salary values
+Select Count(SAL) as Cou_Sal from EMPLOYEE_26;
+
+-- Remove all rows but keep table structure
+TRUNCATE TABLE EMPLOYEE_26;
+
+-- Delete the table completely
+DROP TABLE EMPLOYEE_26;
