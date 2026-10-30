@@ -1,0 +1,41 @@
+-- Create the current employee table
+CREATE TABLE employee(
+id INT PRIMARY KEY,
+e_name VARCHAR(50),
+salary INT);
+
+-- Create the history table to store old versions with timestamp and user
+CREATE TABLE employee_history(
+id INT,
+e_name VARCHAR(50),
+salary INT,
+changed_date TIMESTAMP,
+username VARCHAR2(30));
+
+-- Insert employee records
+INSERT INTO employee VALUES(101,'Rahul',30000);
+INSERT INTO employee VALUES(102,'Priya',40000);
+INSERT INTO employee VALUES(103,'John',35000);
+
+-- Display employee table
+SELECT * FROM employee;
+
+-- Trigger: before each update, save the old row into history
+CREATE TRIGGER save_old_employee
+BEFORE UPDATE ON employee
+FOR EACH ROW
+BEGIN
+INSERT INTO employee_history VALUES (:OLD.id, :OLD.e_name, :OLD.salary, SYSDATE, USER);
+END;
+/
+
+-- Update salary of employee 101 (fires the trigger)
+UPDATE employee
+SET salary = 60000
+WHERE id = 101;
+
+-- Display the saved old record
+SELECT * FROM employee_history;
+
+-- Display current employee table
+SELECT * FROM employee;
