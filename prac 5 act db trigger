@@ -1,0 +1,43 @@
+-- Create inventory table
+CREATE TABLE inventory
+(product_id INT PRIMARY KEY,
+product_name VARCHAR(50),
+stock_quantity INT);
+
+-- Create log table for reorder requests
+CREATE TABLE reorder_log
+(log_id INT PRIMARY KEY,
+product_id INT,
+order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+status VARCHAR(20));
+
+-- Insert products
+INSERT INTO inventory VALUES (10,'egg',4);
+INSERT INTO inventory VALUES (11,'milk',15);
+INSERT INTO inventory VALUES (12,'tea',2);
+
+-- Display inventory
+select * from inventory;
+
+-- Sequence to generate log_id automatically
+CREATE SEQUENCE reorder_log_seq
+START WITH 1
+INCREMENT BY 1;
+
+-- Trigger: after update, log a reorder if stock falls below 5
+CREATE TRIGGER check_low_stock
+AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+IF :NEW.stock_quantity < 5 THEN
+INSERT INTO reorder_log (log_id, product_id, status)
+VALUES (reorder_log_seq.NEXTVAL, :NEW.product_id, 'PENDING_RESTOCK');
+END IF;
+END;
+/
+
+-- Reduce milk stock to 3 (fires the trigger)
+UPDATE inventory SET stock_quantity = 3 WHERE product_id = 11;
+
+-- Display the reorder log
+Select * from reorder_log;
