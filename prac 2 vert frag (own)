@@ -1,0 +1,24 @@
+CREATE TABLE User1 (
+    id NUMBER,
+    name VARCHAR2(30),
+    password VARCHAR2(30),
+    bio VARCHAR2(100)
+);
+
+CREATE TABLE Login AS
+SELECT id, name, password FROM User1;
+
+CREATE TABLE Profile AS
+SELECT id, bio FROM User1;
+
+CREATE VIEW MyView AS
+SELECT L.id, L.name, L.password, P.bio
+FROM Login L, Profile P
+WHERE L.id = P.id;
+
+INSERT INTO Login VALUES (1, 'Alex', '123');
+INSERT INTO Login VALUES (2, 'Sam', '456');
+INSERT INTO Profile VALUES (1, 'Coding');
+INSERT INTO Profile VALUES (2, 'Photography');
+
+SELECT * FROM MyView;
