@@ -1,0 +1,82 @@
+-- Create object type for person name
+CREATE TYPE personTy AS OBJECT(
+surname VARCHAR(10),
+first_name VARCHAR(20),
+middle_name VARCHAR(20),
+mother_name VARCHAR(20));
+/
+
+-- Create object type for address
+CREATE TYPE addressTy AS OBJECT(
+block_no Number(3),
+building_name VARCHAR(20),
+road_name VARCHAR(20),
+area_name VARCHAR(20),
+city_name VARCHAR(20));
+/
+
+-- Create object type for date
+CREATE TYPE dateTy AS OBJECT(
+date_no NUMBER(3),
+month VARCHAR(10),
+year NUMBER(5));
+/
+
+-- Create table using the object types as columns
+CREATE TABLE person(
+name personTy,
+dob dateTy,
+address addressTy,
+Salary NUMBER(10),
+designation VARCHAR(20),
+organization VARCHAR(20));
+
+-- Insert person records (first row inferred from the output table)
+INSERT INTO person VALUES (personTy('A','B','C','D'), dateTy(16,'JULY',2006), addressTy(12,'XYZ','LMN','RST','OPQ'), 15000, 'Fresher', 'SkillCraft');
+INSERT INTO person VALUES (personTy('X','Y','Z','M'), dateTy(29,'Jan',2003), addressTy(3,'THN','LMK','RFH','YHK'), 50000, 'Engineer', 'Mindspace');
+INSERT INTO person VALUES (personTy('K','P','X','E'), dateTy(23,'May',1998), addressTy(28,'XPO','LAT','FQL','GHN'), 40000, 'Employee', 'Wipro');
+INSERT INTO person VALUES (personTy('K','M','H','S'), dateTy(26,'Feb',2002), addressTy(54,'ADF','YHJ','RTX','WRT'), 35000, 'Fresher', 'Infosys');
+INSERT INTO person VALUES (personTy('L','M','N','O'), dateTy(26,'July',1979), addressTy(42,'TSZ','OPQ','MNO','QST'), 45000, 'HR', 'TCS');
+
+-- Display all records
+Select * from person;
+
+-- Salary of person whose first name is B
+SELECT Salary FROM person a
+WHERE a.name.first_name = 'B';
+
+-- Persons born in year 2001 or 2003
+SELECT * FROM person a
+WHERE a.dob.year = 2001
+OR a.dob.year = 2003;
+
+-- Average, minimum, maximum salary of persons born in 2002 or 2006
+SELECT AVG(a.salary), MIN(a.salary), MAX(a.salary) FROM person a WHERE a.dob.year IN (2002, 2006);
+
+-- Increase salary by 500 for person with surname A
+UPDATE person a SET a.salary = a.salary + 500
+WHERE a.name.surname = 'A';
+
+-- Designation and salary of person born in July whose mother name is D
+SELECT p.designation, p.salary FROM person p
+WHERE p.dob.month = 'July' AND p.name.mother_name = 'D';
+
+-- Persons whose first name starts with N
+SELECT * FROM person p WHERE p.name.first_name LIKE 'N%';
+
+-- Name, designation, organization of persons born before 1990
+SELECT a.name.surname, a.name.first_name, a.designation, a.organization FROM person a
+WHERE a.dob.year < 1990;
+
+-- Persons born between 1980 and 2004
+SELECT a.name.first_name, a.dob.year, a.salary, a.organization FROM person a
+WHERE a.dob.year >= 1980 AND a.dob.year <= 2004;
+
+-- Delete persons born in or before 1980
+DELETE FROM person p
+WHERE p.dob.year <= 1980;
+
+-- Remove the road_name attribute from address type
+ALTER TYPE addressTy
+DROP ATTRIBUTE (road_name)
+CASCADE;
