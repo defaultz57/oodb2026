@@ -1,0 +1,30 @@
+-- Create original table with all columns
+CREATE TABLE User_Og(
+user_id NUMBER PRIMARY KEY,
+username VARCHAR2(30),
+password VARCHAR2(30),
+bio VARCHAR2(100));
+
+-- Create fragment 1 with login columns
+CREATE TABLE Fr_Login AS SELECT
+user_id, username, password FROM User_Og;
+
+-- Create fragment 2 with profile columns
+CREATE TABLE Fr_Profile AS SELECT
+user_id, bio FROM User_Og;
+
+-- Create a view that joins both fragments back together
+CREATE VIEW Full_View AS SELECT
+L.user_id, L.username, L.password, P.bio
+FROM Fr_Login L JOIN Fr_Profile P ON L.user_id = P.user_id;
+
+-- Insert user 1 into both fragments
+INSERT INTO Fr_Login VALUES (1, 'alex99', 'secret123');
+INSERT INTO Fr_Profile VALUES (1, 'coding enthusiast');
+
+-- Insert user 2 into both fragments
+INSERT INTO Fr_Login VALUES (2, 'sam124', 'mystery456');
+INSERT INTO Fr_Profile VALUES (2, 'photographer');
+
+-- Display the combined data through the view
+SELECT * FROM Full_View;
