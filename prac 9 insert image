@@ -1,0 +1,67 @@
+-- Create table with a BLOB column to store images
+Create Table image26(
+id Number,
+image Blob);
+
+-- Check the table
+Select id from image26;
+
+
+import java.sql.*;
+import java.io.*;
+import java.awt.*;
+import javax.swing.*;
+
+public class MyImage extends JFrame {
+    public MyImage() {
+        try {
+            //---------- Inserting Image ----------
+            // Load the ODBC driver
+            Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
+            // Connect to the Oracle database
+            Connection con = DriverManager.getConnection("jdbc:odbc:orcl2", "scott", "tiger");
+            // Prepare insert statement with two parameters
+            PreparedStatement pstmt = con.prepareStatement("insert into image26 values (?,?)");
+            // Set id value
+            pstmt.setInt(1, 1);
+            // Open the image file
+            File f = new File("C:\\Documents and Settings\\user\\Desktop\\Sunset.jpeg");
+            FileInputStream fin = new FileInputStream(f);
+            // Set image as binary stream
+            pstmt.setBinaryStream(2, fin, (int) f.length());
+            // Execute the insert
+            pstmt.executeUpdate();
+            System.out.println("Image Inserted Successfully");
+
+            //---------- Retrieving Image ----------
+            // Create statement and fetch all rows
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("select * from image26");
+            JLabel l;
+            Icon icon;
+            byte[] image;
+            while (rs.next()) {
+                // Read image bytes from column 2
+                image = rs.getBytes(2);
+                // Convert bytes to an icon
+                icon = new ImageIcon(image);
+                // Put icon in a label
+                l = new JLabel(icon);
+                // Add label to the frame
+                getContentPane().add(l, BorderLayout.CENTER);
+            }
+            System.out.println("image displayed successfully");
+        }
+        catch (SQLException e) {
+            System.out.println(e);
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public static void main(String args[]) {
+        MyImage ob = new MyImage();
+        ob.setVisible(true);
+    }
+}
