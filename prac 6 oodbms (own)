@@ -1,0 +1,17 @@
+CREATE TYPE student AS OBJECT
+(
+  rollno NUMBER,
+  name VARCHAR2(20),
+  marks NUMBER
+);
+/
+
+CREATE TABLE student_obj OF student;
+
+INSERT INTO student_obj
+VALUES (student(1,'Rahul',85));
+
+INSERT INTO student_obj
+VALUES (student(2,'Amit',90));
+
+SELECT * FROM student_obj;
