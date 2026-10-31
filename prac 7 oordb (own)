@@ -1,0 +1,24 @@
+CREATE TYPE address AS OBJECT
+(
+  city VARCHAR2(20),
+  pincode NUMBER
+);
+/
+
+CREATE TABLE employee
+(
+  empid NUMBER,
+  name VARCHAR2(20),
+  addr address
+);
+
+INSERT INTO employee
+VALUES (1,'Rahul',address('Mumbai',400601));
+
+INSERT INTO employee
+VALUES (2,'Amit',address('Thane',400602));
+
+SELECT * FROM employee;
+
+SELECT empid, name, addr.city, addr.pincode
+FROM employee;
